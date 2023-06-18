@@ -1,0 +1,4 @@
+# BIT CONFIG
+BIT_ENDIAN = "big"
+BIT_LENGTH = 32
+BIT_SIGNED = False
