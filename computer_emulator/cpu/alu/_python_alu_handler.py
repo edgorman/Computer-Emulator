@@ -89,11 +89,11 @@ class PythonALUHandler(ALUInterface):
     
     def increment(self, x: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x + y
-        return self._execute_arithmetic(x, 1, operator)
+        return self._execute_arithmetic(x, self._int_to_bytes(1), operator)
 
     def decrement(self, x: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x + y
-        return self._execute_arithmetic(x, -1, operator)
+        return self._execute_arithmetic(x, self._int_to_bytes(-1), operator)
 
     def subtract(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x - y
@@ -116,9 +116,8 @@ class PythonALUHandler(ALUInterface):
         return self._execute_logic(x, y, operator)
     
     def not_(self, x: bytes) -> bytes:
-        y = False.to_bytes(self.__bit_length, self.__bit_endian, signed=self.__bit_signed)
         operator = lambda x, y: not x
-        return self._execute_logic(x, y, operator)
+        return self._execute_logic(x, self._bool_to_bytes(False), operator)
 
     def nand_(self, x: bytes, y: bytes) -> bytes:
         operator = lambda x, y: not(x and y)
