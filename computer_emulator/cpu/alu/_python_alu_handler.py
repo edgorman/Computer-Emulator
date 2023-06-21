@@ -59,17 +59,41 @@ class PythonALUHandler(ALUInterface):
         if not self.__bit_signed and int_output < 0:
             raise ArithmeticError(f"The ALU does not support negative numbers: {int_output}")
 
-        # Output values from operation
+        # Calculate output from operation
         bin_output = self._int_to_bytes(int_output)
         bin_carry = self._int_to_bytes(int_carry)
         bool_zero = bool(int_output == 0)
         bool_negative = bool(int_output < 0)
         bool_overflow = int_result >= self.__max_value or (self.__bit_signed and int_result <= self.__min_value)
+
         return bin_output, bin_carry, bool_zero, bool_negative, bool_overflow
+
+    def _execute_logic(
+        self, 
+        x: bytes, 
+        y: bytes, 
+        operator: function
+    ) -> bytes:
+        # Perform logical operation
+        bool_x = self._bytes_to_bool(x)
+        bool_y = self._bytes_to_bool(y)
+        bool_result = operator(bool_x, bool_y)
+
+        # Calculate output from operation
+        bin_output = self._bool_to_bytes(bool_result)
+        return bin_output
 
     def add(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x + y
         return self._execute_arithmetic(x, y, operator)
+    
+    def increment(self, x: bytes) -> Union[bytes, bytes, bool, bool, bool]:
+        operator = lambda x, y: x + y
+        return self._execute_arithmetic(x, 1, operator)
+
+    def decrement(self, x: bytes) -> Union[bytes, bytes, bool, bool, bool]:
+        operator = lambda x, y: x + y
+        return self._execute_arithmetic(x, -1, operator)
 
     def subtract(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x - y
@@ -82,3 +106,28 @@ class PythonALUHandler(ALUInterface):
     def divide(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x / y
         return self._execute_arithmetic(x, y, operator)
+
+    def and_(self, x: bytes, y: bytes) -> bytes:
+        operator = lambda x, y: x and y
+        return self._execute_logic(x, y, operator)
+    
+    def or_(self, x: bytes, y: bytes) -> bytes:
+        operator = lambda x, y: x or y
+        return self._execute_logic(x, y, operator)
+    
+    def not_(self, x: bytes) -> bytes:
+        y = False.to_bytes(self.__bit_length, self.__bit_endian, signed=self.__bit_signed)
+        operator = lambda x, y: not x
+        return self._execute_logic(x, y, operator)
+
+    def nand_(self, x: bytes, y: bytes) -> bytes:
+        operator = lambda x, y: not(x and y)
+        return self._execute_logic(x, y, operator)
+
+    def nor_(self, x: bytes, y: bytes) -> bytes:
+        operator = lambda x, y: not(x or y)
+        return self._execute_logic(x, y, operator)
+
+    def xor_(self, x: bytes, y: bytes) -> bytes:
+        operator = lambda x, y: (x or y) and not(x and y)
+        return self._execute_logic(x, y, operator)
