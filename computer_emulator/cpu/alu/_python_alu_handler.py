@@ -23,6 +23,9 @@ class PythonALUHandler(ALUInterface):
             self.__max_value = 2**(self.__bit_length - 1) - 1
             self.__min_value = -2**(self.__bit_length - 1)
         
+        # Construct the opcode mapping
+        self.__opcode_map = [d for d in dir(self) if not d.startswith("_")]
+        
     def _int_to_bytes(self, x: int) -> bytes:
         return int.to_bytes(x, self.__bit_length, self.__bit_endian, signed=self.__bit_signed)
 
@@ -82,6 +85,10 @@ class PythonALUHandler(ALUInterface):
         # Calculate output from operation
         bin_output = self._bool_to_bytes(bool_result)
         return bin_output
+
+    def get_operation(self, opcode: bytes) -> function:
+        func_name = self.__opcode_map[int.from_bytes(opcode)]
+        return getattr(self, func_name)
 
     def add(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
         operator = lambda x, y: x + y

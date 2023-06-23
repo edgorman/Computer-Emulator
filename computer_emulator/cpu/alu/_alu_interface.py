@@ -8,6 +8,10 @@ from abc import ABC, abstractmethod
 
 
 class ALUInterface(ABC):
+
+    @abstractmethod
+    def get_operation(self, x: bytes) -> function:
+        """get the operation function from the opcode reference"""
     
     @abstractmethod
     def add(self, x: bytes, y: bytes) -> Union[bytes, bytes, bool, bool, bool]:
